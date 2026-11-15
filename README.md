@@ -290,6 +290,23 @@ These steps assume Ubuntu 24.04. A 2 vCPU / 4 GB server handles `MAX_CONCURRENT_
    Port 8000 is bound to `127.0.0.1`, so it isn't reachable from outside. Keep it that way, because the app trusts `X-Forwarded-For` for rate limiting.
 7. **Optional:** upload Instagram and YouTube cookies through the admin API (see above).
 
+### Frontend on Vercel (optional)
+
+Vercel can host the **website**, but not the **backend**. Downloads run for minutes, need ffmpeg and temporary files, and keep job state in memory, and none of that fits Vercel's short-lived serverless functions. So run the backend on a server (steps above, or Render/Railway with the Dockerfile), and put only the frontend on Vercel:
+
+1. **Import the repo.** On vercel.com go to **Add New → Project**, then import this GitHub repo.
+2. **Set the root directory** to `frontend`. Vercel picks up `frontend/vercel.json`, which sets up the Vite build and `dist` output.
+3. **Add an environment variable:** `VITE_API_BASE = https://api.yourdomain.com`. This is your backend's public HTTPS URL, with no trailing slash.
+4. **Click Deploy.** Every push to `main` then redeploys automatically.
+5. **Allow the Vercel site on the backend** (in its `.env`), then restart the backend:
+   ```bash
+   CORS_ORIGINS=https://reeltube.vercel.app               # your production URL(s), comma-separated
+   CORS_ORIGIN_REGEX=https://reeltube(-[a-z0-9-]+)?\.vercel\.app   # also allow preview deployments
+   ```
+6. **Point the backend's `DOMAIN`** (used by Caddy) at the API hostname, e.g. `api.yourdomain.com`.
+
+The backend must be served over HTTPS, because a site on `https://…vercel.app` can't call a plain `http://` API. Caddy in `docker-compose.yml` handles that.
+
 ### Maintenance
 
 ```bash

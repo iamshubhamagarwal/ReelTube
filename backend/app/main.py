@@ -69,8 +69,16 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="ReelTube", lifespan=lifespan)
 
-if config.CORS_ORIGINS:
-    app.add_middleware(CORSMiddleware, allow_origins=config.CORS_ORIGINS, allow_methods=["*"], allow_headers=["*"])
+if config.CORS_ORIGINS or config.CORS_ORIGIN_REGEX:
+    # Needed when the frontend is hosted on another domain (e.g. Vercel).
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=config.CORS_ORIGINS,
+        allow_origin_regex=config.CORS_ORIGIN_REGEX,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["Content-Disposition"],
+    )
 
 info_limiter = RateLimiter(config.RATE_INFO_PER_MINUTE, 60, "lookup")
 download_limiter = RateLimiter(config.RATE_DOWNLOADS_PER_HOUR, 3600, "download")

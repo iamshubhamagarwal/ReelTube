@@ -77,6 +77,9 @@ FRONTEND_DIST = Path(os.environ.get("FRONTEND_DIST", Path(__file__).resolve().pa
 # Comma-separated list of extra origins allowed by CORS (only needed when the
 # frontend is hosted on a different domain than the API).
 CORS_ORIGINS = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
+# Optional regex for origins, handy for Vercel preview URLs, e.g.
+#   CORS_ORIGIN_REGEX=https://reeltube(-[a-z0-9-]+)?\.vercel\.app
+CORS_ORIGIN_REGEX = os.environ.get("CORS_ORIGIN_REGEX", "").strip() or None
 
 # Qualities offered in the UI, highest first.
 QUALITIES = [h for h in (2160, 1440, 1080, 720, 480, 360) if h <= MAX_QUALITY]

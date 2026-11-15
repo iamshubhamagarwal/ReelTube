@@ -1,10 +1,16 @@
-// Thin wrappers around the backend API. All paths are relative, so the same
-// build works behind Vite's dev proxy and when served by FastAPI.
+// Thin wrappers around the backend API.
+//
+// By default paths are relative ("/api/..."), which works behind Vite's dev
+// proxy and when FastAPI serves the built site itself. When the frontend is
+// hosted elsewhere (e.g. Vercel), set VITE_API_BASE at build time to the
+// backend's public URL, e.g. https://api.example.com (no trailing slash).
+const BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/+$/, '')
+const url = (path) => BASE + path
 
 async function request(method, path, body) {
   let res
   try {
-    res = await fetch(path, {
+    res = await fetch(url(path), {
       method,
       headers: body ? { 'Content-Type': 'application/json' } : undefined,
       body: body ? JSON.stringify(body) : undefined,
@@ -28,11 +34,11 @@ export const startDownload = (payload) => request('POST', '/api/download', paylo
 export const cancelJob = (jobId) => request('DELETE', `/api/job/${jobId}`)
 export const retryJob = (jobId) => request('POST', `/api/job/${jobId}/retry`)
 export const getJob = (jobId) => request('GET', `/api/job/${jobId}`)
-export const progressUrl = (jobId) => `/api/progress/${jobId}`
-export const fileUrl = (jobId) => `/api/file/${jobId}`
+export const progressUrl = (jobId) => url(`/api/progress/${jobId}`)
+export const fileUrl = (jobId) => url(`/api/file/${jobId}`)
 
 export const createBatch = (items) => request('POST', '/api/batch', { items })
 export const getBatch = (batchId) => request('GET', `/api/batch/${batchId}`)
 export const cancelBatch = (batchId) => request('DELETE', `/api/batch/${batchId}`)
-export const batchProgressUrl = (batchId) => `/api/batch/${batchId}/progress`
-export const batchZipUrl = (batchId) => `/api/batch/${batchId}/zip`
+export const batchProgressUrl = (batchId) => url(`/api/batch/${batchId}/progress`)
+export const batchZipUrl = (batchId) => url(`/api/batch/${batchId}/zip`)
