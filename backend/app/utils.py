@@ -314,7 +314,13 @@ _ERROR_MAP = [
     (r"(user|post|media).*(could not be found|not found|unavailable)|HTTP Error 404",
      "That Instagram post or account doesn't exist or was deleted."),
     # Rate limits (both platforms)
-    (r"not a bot|429|too many requests|rate.?limit|please wait a few minutes",
+    # YouTube's bot check. Almost always means the server runs on a cloud /
+    # datacenter IP (Vercel, AWS, most VPS ranges) that YouTube distrusts.
+    # Waiting rarely helps; cookies or a different host do.
+    (r"not a bot|confirm you.?re not a bot|sign in to confirm",
+     "YouTube is blocking this server's IP address with a \"confirm you're not a bot\" check. "
+     "This happens on cloud hosts (Vercel, AWS, many VPS). Admin: add YouTube cookies.txt or run the backend elsewhere."),
+    (r"429|too many requests|rate.?limit|please wait a few minutes",
      "The site is rate-limiting this server. Please try again in a few minutes."),
     (r"unable to obtain file audio codec|does not contain any stream|Output file .* does not contain",
      "This video has no sound, so it can't be saved as MP3."),
