@@ -21,6 +21,7 @@ Execution
 State lives in memory, so run the server with ONE worker process.
 """
 import asyncio
+import json
 import logging
 import os
 import re
@@ -34,7 +35,7 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
 from . import config, media, ytdlp
-from .utils import RATE_LIMIT_RE, Link, clip_label, friendly_error, sanitize_filename, unique_name
+from .utils import RATE_LIMIT_RE, Link, clip_label, friendly_error, parse_link, sanitize_filename, unique_name
 
 log = logging.getLogger("jobs")
 
@@ -202,11 +203,63 @@ class JobManager:
     async def start(self):
         config.DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
         self._semaphore = asyncio.Semaphore(config.MAX_CONCURRENT_JOBS)
-        # Leftovers from a previous run can't be served (state was in memory).
+        restored = 0
         for child in config.DOWNLOAD_DIR.iterdir():
             if child.is_dir():
-                shutil.rmtree(child, ignore_errors=True)
+                # Finished, unexpired jobs come back (so their download links
+                # keep working across a restart); everything else is removed.
+                if self._restore(child):
+                    restored += 1
+                else:
+                    shutil.rmtree(child, ignore_errors=True)
+        if restored:
+            log.info("restored %d finished job(s) from disk", restored)
         self._cleanup_task = asyncio.create_task(self._cleanup_loop())
+
+    # ---- persistence of finished jobs ----------------------------------------
+
+    MANIFEST = "job.json"
+
+    def _save_manifest(self, item: Item):
+        """Write a small JSON next to a finished file so it survives a restart."""
+        if not item.file_path:
+            return
+        data = {
+            "id": item.id, "ip": item.ip, "created": item.created, "url": item.link.url,
+            "kind": item.kind, "quality": item.quality, "bitrate": item.bitrate,
+            "title": item.title, "thumbnail": item.info.get("thumbnail"),
+            "channel": item.info.get("channel", ""),
+            "file": item.file_path.relative_to(item.folder).as_posix(),
+            "download_name": item.download_name, "filesize": item.filesize,
+        }
+        try:
+            (item.folder / self.MANIFEST).write_text(json.dumps(data), encoding="utf-8")
+        except OSError:
+            log.exception("could not save manifest for %s", item.id)
+
+    def _restore(self, folder: Path) -> bool:
+        """Load a finished job from its manifest. Returns False if it can't/shouldn't be restored."""
+        try:
+            data = json.loads((folder / self.MANIFEST).read_text(encoding="utf-8"))
+            file_path = (folder / data["file"]).resolve()
+            link = parse_link(data["url"])
+            if (data["id"] != folder.name or not link or not file_path.is_file()
+                    or folder.resolve() not in file_path.parents
+                    or time.time() - float(data["created"]) > config.FILE_TTL_SECONDS):
+                return False
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
+        item = Item(
+            id=data["id"], ip=data.get("ip", ""), link=link,
+            info={"title": data.get("title"), "thumbnail": data.get("thumbnail"), "channel": data.get("channel", "")},
+            kind=data.get("kind", "video"), quality=int(data.get("quality") or 0), bitrate=int(data.get("bitrate") or 0),
+            created=float(data["created"]),
+            status="done", stage="done", percent=100.0, stage_percent=100.0, steps=["download"],
+            file_path=file_path, download_name=data.get("download_name"), filesize=data.get("filesize"),
+        )
+        item.parts = [(file_path, item.download_name or file_path.name)]
+        self.jobs[item.id] = item
+        return True
 
     async def stop(self):
         if self._cleanup_task:
@@ -360,6 +413,7 @@ class JobManager:
             item.touch(status="done", stage="done", percent=100.0, stage_percent=100.0,
                        speed=None, eta=None, note=None,
                        filesize=item.file_path.stat().st_size if item.file_path else None)
+            self._save_manifest(item)
 
     async def _exec(self, item: Item, args: List[str], on_line: Callable[[str], None]) -> Tuple[int, str]:
         """

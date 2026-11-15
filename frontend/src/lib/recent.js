@@ -33,6 +33,15 @@ export function addRecent(job) {
   } catch { /* storage unavailable */ }
 }
 
+/** Drop one entry (e.g. the server no longer has the file). */
+export function removeRecent(jobId) {
+  try {
+    const list = loadRecent().filter((e) => e.job_id !== jobId)
+    localStorage.setItem(KEY, JSON.stringify(list))
+    window.dispatchEvent(new Event('reeltube:recent'))
+  } catch { /* storage unavailable */ }
+}
+
 export function clearRecent() {
   try {
     localStorage.removeItem(KEY)

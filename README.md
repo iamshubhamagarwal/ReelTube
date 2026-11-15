@@ -333,7 +333,7 @@ Cookies live in the `appdata` volume, so they survive rebuilds. An update made t
 | Formats missing / only 360p on YouTube | No JS runtime found. Install Deno, or set `YTDLP_JS_RUNTIMES=node`. |
 | Clips take a while | Expected. Frame-accurate cuts re-encode each clip, at roughly 1–2× real time for 720p on a typical CPU. |
 | 4K file won't play in QuickTime/Windows Photos | YouTube serves 1440p/4K only as VP9/AV1. Use VLC, or set `PREFER_H264=true` and pick ≤1080p. |
-| Jobs vanish after a restart | Expected. State is held in memory, and leftover files are deleted on startup. Run with **one** worker. |
+| Jobs vanish after a restart | Finished files survive a restart (each keeps a small `job.json`) until their hour is up. Queued or running jobs are lost and must be started again. Run with **one** worker. |
 
 ---
 
