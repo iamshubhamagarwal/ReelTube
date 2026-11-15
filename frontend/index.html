@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#09090b" />
+    <title>ReelTube – YouTube & Instagram downloader</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23dc2626'/><stop offset='.5' stop-color='%23db2777'/><stop offset='1' stop-color='%239333ea'/></linearGradient></defs><rect width='24' height='24' rx='6' fill='url(%23g)'/><path d='M9 7l8 5-8 5z' fill='white'/></svg>" />
+    <script>
+      // Apply the saved/system theme before React loads, so there's no flash.
+      try {
+        const saved = localStorage.getItem('theme')
+        const dark = saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+        document.documentElement.classList.toggle('dark', dark)
+      } catch (e) { document.documentElement.classList.add('dark') }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

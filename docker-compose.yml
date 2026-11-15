@@ -1,0 +1,42 @@
+# Local / simple use:     docker compose up -d --build        -> http://localhost:8000
+# Public server + HTTPS:  docker compose --profile https up -d --build
+#                         (set DOMAIN in .env and point its DNS at the server)
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      # Bound to localhost only: the public reaches the app through Caddy.
+      # Never publish 8000 to the internet directly (X-Forwarded-For is trusted).
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - downloads:/app/downloads   # temp files, auto-deleted after 1 hour
+      - appdata:/app/data          # cookies.txt lives here (optional, upload via admin API)
+    # A container restart reinstalls nothing: yt-dlp updates made through the
+    # admin API persist until the container is re-created (e.g. after --build).
+
+  caddy:
+    image: caddy:2.8
+    profiles: ["https"]
+    restart: unless-stopped
+    depends_on: [app]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  downloads:
+  appdata:
+  caddy_data:
+  caddy_config:

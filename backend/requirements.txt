@@ -1,0 +1,13 @@
+# Web server
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20   # admin cookies.txt upload
+
+# Download engine. [default] pulls in yt-dlp-ejs (YouTube JS challenge solver),
+# mutagen (MP3 cover art/tags) and other recommended extras.
+# Not pinned on purpose: YouTube changes often; update via the admin endpoint.
+yt-dlp[default]>=2025.11.12
+
+# Instagram images, carousels and stories (needs Instagram cookies for most
+# content). Also updated by the admin endpoint.
+gallery-dl>=1.30.0
