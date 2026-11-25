@@ -7,7 +7,7 @@ import PlatformBadge from './PlatformBadge'
 import { Card, ErrorBox, PrimaryButton, StickyBar } from './ui'
 import VideoCard from './VideoCard'
 
-const MAX_ITEMS = 10
+const MAX_ITEMS = 20  // keep in sync with MAX_BATCH_ITEMS in backend/app/config.py
 let nextKey = 1
 
 /**

@@ -28,14 +28,14 @@ CLEANUP_INTERVAL_SECONDS = _int("CLEANUP_INTERVAL_SECONDS", 300)
 
 # --- Job queue ---------------------------------------------------------------
 MAX_CONCURRENT_JOBS = _int("MAX_CONCURRENT_JOBS", 2)       # yt-dlp/ffmpeg processes running at once
-MAX_QUEUED_JOBS = _int("MAX_QUEUED_JOBS", 20)              # reject new jobs beyond this
-MAX_ACTIVE_JOBS_PER_IP = _int("MAX_ACTIVE_JOBS_PER_IP", 10) # queued + running items per client (a batch item counts as one)
+MAX_QUEUED_JOBS = _int("MAX_QUEUED_JOBS", 40)              # reject new jobs beyond this
+MAX_ACTIVE_JOBS_PER_IP = _int("MAX_ACTIVE_JOBS_PER_IP", 20) # queued + running items per client (a batch item counts as one)
 JOB_TIMEOUT_SECONDS = _int("JOB_TIMEOUT_SECONDS", 1800)    # kill a job running longer than this
 
 # --- Multi-clip / batch --------------------------------------------------------
 MAX_CLIPS_PER_JOB = _int("MAX_CLIPS_PER_JOB", 20)              # clips in one item
 MAX_TOTAL_CLIP_SECONDS = _int("MAX_TOTAL_CLIP_SECONDS", 3600)  # summed clip length per item
-MAX_BATCH_ITEMS = _int("MAX_BATCH_ITEMS", 10)                  # links in one batch
+MAX_BATCH_ITEMS = _int("MAX_BATCH_ITEMS", 20)                  # links in one batch
 MERGE_FADE_SECONDS = 0.5                                       # total fade between merged clips
 
 # --- Limits ------------------------------------------------------------------

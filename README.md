@@ -199,7 +199,7 @@ The older single-clip format `{start, end}` still works.
 - **Per-clip progress:** read from ffmpeg's `time=` output while each section is cut.
 - **Merged output:** the clips go through ffmpeg's concat demuxer with **stream copy** (fast, no quality loss) when they all share the same codec, resolution and frame rate. When a fade is requested or the clips differ, they are **re-encoded** through the concat filter: the resolution, frame rate and sample rate are normalised, and silent audio is generated for clips without sound.
 - **File names:** `<Title> - <clip name or 34m33s-36m43s>.mp4`, `<Title> - merged 3 clips.mp4`, `<Title> - 3 clips.zip`, and `<user> - <shortcode> - 01.jpg` for Instagram.
-- **Limits:** `MAX_CLIPS_PER_JOB` (20) and `MAX_TOTAL_CLIP_SECONDS` (1 h) per item, and `MAX_BATCH_ITEMS` (10) per batch. Files are deleted 1 hour after creation, and the hour restarts when you retry.
+- **Limits:** `MAX_CLIPS_PER_JOB` (20) and `MAX_TOTAL_CLIP_SECONDS` (1 h) per item, and `MAX_BATCH_ITEMS` (20) per batch. Files are deleted 1 hour after creation, and the hour restarts when you retry.
 
 ### Admin endpoints
 
@@ -251,11 +251,11 @@ Set these in `.env` for Docker, or as environment variables. Defaults are in [ba
 |---|---|---|
 | `ADMIN_TOKEN` | *(empty = admin off)* | Secret for `/api/admin/*` |
 | `MAX_CONCURRENT_JOBS` | 2 | Items processed at once. The rest wait in the queue. |
-| `MAX_QUEUED_JOBS` | 20 | Queued + running items before the server returns "busy" |
-| `MAX_ACTIVE_JOBS_PER_IP` | 10 | Queued + running items per visitor. Each batch item counts. |
+| `MAX_QUEUED_JOBS` | 40 | Queued + running items before the server returns "busy" |
+| `MAX_ACTIVE_JOBS_PER_IP` | 20 | Queued + running items per visitor. Each batch item counts. |
 | `MAX_CLIPS_PER_JOB` | 20 | Clips per link |
 | `MAX_TOTAL_CLIP_SECONDS` | 3600 | Combined clip length per link |
-| `MAX_BATCH_ITEMS` | 10 | Links per batch |
+| `MAX_BATCH_ITEMS` | 20 | Links per batch |
 | `RATE_INFO_PER_MINUTE` | 30 | `/api/info` calls per IP per minute |
 | `RATE_DOWNLOADS_PER_HOUR` | 30 | Items downloaded per IP per hour |
 | `MAX_DURATION_SECONDS` | 10800 | Longest video, or combined clip length, allowed |
